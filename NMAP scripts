@@ -1,0 +1,56 @@
+1 Discover Live Hosts in the Network
+nmap -sn IP-range -oA live_hosts                               # Discovers active hosts without full port scanning , Helps answer: "What systems are alive?"
+nmap -sn -PS22,80,445,3389 IP-range -oA tcp_discovery          # TCP discovery scan (common internal ports) , Helps bypass ICMP filtering
+
+2 Full Internal Service Mapping
+nmap -sS -sV -O -p- IP-range -oA internal_services             # Stealth scan + version + OS detection , Helps answer: "What services are running internally?"
+
+3 What File Shares Can I Access? (SMB)?
+nmap -p445 --script smb-enum-shares IP-range -oA smb_shares    # Lists accessible SMB shares , Helps answer: "Can I access internal file servers?"
+
+4 Enumerate Domain / Local Users (If Allowed)
+nmap -p445 --script smb-enum-users IP-range -oA smb_users      # Attempts to enumerate domain/local users , Helps answer: "Can I view domain users?"
+
+5 Detect Active Directory / LDAP Servers
+nmap -p389,636 -sV IP-range -oA ldap_detection                 # Identifies LDAP/LDAPS services , Helps answer: "Where are the Domain Controllers?"
+nmap -p389 --script ldap-rootdse IP-range -oA ldap_info        # Extracts LDAP root DSE information , Helps gather domain details
+
+6 Check RDP Exposure (Lateral Movement Targets)
+nmap -p3389 --script rdp-ntlm-info IP-range -oA rdp_hosts      # Extracts NTLM info , Helps answer: "Where can I attempt RDP access?"
+
+7 Detect Internal Databases
+nmap -p3306 --script mysql-info IP-range -oA mysql_servers     # Detects MySQL instances , Helps answer: "Are internal MySQL databases exposed?"
+nmap -p5432 --script pgsql-info IP-range -oA postgres_servers  # Detects PostgreSQL instances , Helps identify exposed Postgres DBs
+nmap -p1433 --script ms-sql-info IP-range -oA mssql_servers    # Detects MSSQL servers , Helps identify internal SQL Servers
+
+8 Detect Redis / Elasticsearch Exposure
+nmap -p6379 --script redis-info IP-range -oA redis_servers     # Detects Redis without authentication , Helps identify misconfigured Redis
+nmap -p9200 --script http-enum IP-range -oA elastic_servers    # Detects exposed Elasticsearch clusters , Helps identify data exposure risk
+
+9 Discover Internal Web Applications
+nmap -p80,443,8080,8443 --script http-title IP-range -oA internal_web   # Identifies internal web portals , Helps answer: "Are admin panels exposed?"
+
+10 Check Enabled HTTP Methods
+nmap -p80,443 --script http-methods IP-range -oA http_methods  # Detects dangerous methods (PUT, DELETE, TRACE) , Helps identify upload/misconfig risks
+
+11 Run Internal Vulnerability Sweep (Use Carefully)
+nmap --script vuln IP-range -oA internal_vulns                 # Runs vulnerability scripts , Helps answer: "Are internal systems missing patches?"
+
+12 Firewall Detection (Network Filtering Check)
+nmap -sA IP-range -oA firewall_check                           # ACK scan , Helps determine firewall rules and filtering behavior
+
+13 Check for Anonymous FTP Access
+nmap -p21 --script ftp-anon IP-range -oA ftp_access            # Detects anonymous FTP login , Helps identify exposed file repositories
+
+15 Detect NFS Shares (Linux File Shares)
+nmap -p2049 --script nfs-showmount IP-range -oA nfs_shares     # Lists exported NFS shares , Helps answer: "Are Linux shares accessible?"
+
+16 Identify Exposed Docker API
+nmap -p2375 IP-range -oA docker_api                            # Detects exposed Docker daemon , Helps identify container takeover risk
+
+17 Identify Exposed Kubernetes API
+nmap -p6443 IP-range -oA kube_api                              # Detects Kubernetes API server , Helps identify cluster exposure
+
+
+
+
