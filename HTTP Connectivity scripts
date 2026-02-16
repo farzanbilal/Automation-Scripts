@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# File containing list of IPs
+IP_LIST="ips.txt"
+
+# Output file
+OUTPUT="http_connectivity_results.txt"
+
+echo "HTTP Connectivity Scan Started" > $OUTPUT
+echo "--------------------------------" >> $OUTPUT
+
+while read ip; do
+    echo "[+] Checking HTTP on $ip" | tee -a $OUTPUT
+    
+    # Check HTTP (port 80)
+    curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 http://$ip > status.txt
+    STATUS=$(cat status.txt)
+
+    if [[ "$STATUS" =~ ^2|3 ]]; then
+        echo "$ip : HTTP Accessible (Status Code: $STATUS)" | tee -a $OUTPUT
+    else
+        echo "$ip : Not Accessible / No HTTP Response" | tee -a $OUTPUT
+    fi
+
+done < $IP_LIST
+
+echo "Scan Completed"
